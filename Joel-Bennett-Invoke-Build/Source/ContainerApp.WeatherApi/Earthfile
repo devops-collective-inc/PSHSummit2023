@@ -1,0 +1,26 @@
+VERSION 0.7
+FROM mcr.microsoft.com/dotnet/sdk:7.0
+WORKDIR /source
+
+deps:
+    # copying project files and restoring NuGet allows docker to cache packages
+    # only re-build when the csproj changes (probably because you added a new dependency)
+    COPY *.csproj .
+    RUN dotnet restore --ucr
+
+build:
+    ARG VERSION=1.0.0
+    ARG CONFIGURATION=Release
+    FROM +deps
+    COPY . .
+    # make sure you have bin and obj in .earthlyignore, as their content from context might cause problems
+    RUN dotnet publish -o output --no-restore --ucr --no-self-contained -c ${CONFIGURATION} -p Version=${VERSION}
+
+    SAVE ARTIFACT output AS LOCAL WeatherApi
+
+runtime:
+    FROM mcr.microsoft.com/dotnet/aspnet:7.0
+    WORKDIR /api
+    COPY +build/output .
+    ENTRYPOINT ["dotnet", "ContainerApp.WeatherApi.dll"]
+    SAVE IMAGE --push containerapp-webapp:earthly

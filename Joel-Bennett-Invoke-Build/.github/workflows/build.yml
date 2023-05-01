@@ -1,0 +1,45 @@
+name: Build and Test
+on: push
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # - uses: actions/cache@v3
+    #   with:
+    #     path: ~/.nuget/packages
+    #     key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+    #     restore-keys: |
+    #       ${{ runner.os }}-nuget
+
+    - name: dotnet restore
+      shell: pwsh
+      run: Invoke-Build -Task DotNetRestore
+
+    - name: dotnet build
+      shell: pwsh
+      run: Invoke-Build -Task DotNetBuild
+
+    - name: dotnet test
+      shell: pwsh
+      run: Invoke-Build -Task DotNetTest
+
+    - name: dotnet publish
+      shell: pwsh
+      run: Invoke-Build -Task DotNetPublish
+
+    - name: Upload Build Output
+      uses: actions/upload-artifact@v3
+      with:
+        name: Output
+        path: ${{github.workspace}}/output/publish
+
+    - name: Upload Test Results
+      uses: actions/upload-artifact@v3
+      with:
+        name: PesterTests
+        path: ${{github.workspace}}/output/tests
