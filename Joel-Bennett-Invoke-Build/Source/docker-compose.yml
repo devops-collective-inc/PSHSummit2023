@@ -1,0 +1,54 @@
+version: '3.6'
+
+services:
+  containerapp-webapp:
+    container_name: containerapp-webapp
+    image: containerapp-webapp
+    build:
+      context: containerapp.webapp
+      dockerfile: Dockerfile
+    environment:
+      - ApiAddress=http://containerapp-todoapi
+      - WeatherApi=http://containerapp-weatherapi
+    ports:
+      - 7171:80
+    links:
+      - containerapp-todoapi
+      - containerapp-weatherapi
+    depends_on:
+      - containerapp-todoapi
+      - containerapp-weatherapi
+  containerapp-todoapi:
+    container_name: containerapp-todoapi
+    image: containerapp-todoapi
+    links:
+      - containerapp-sqlserverdb
+    depends_on:
+      - containerapp-sqlserverdb
+    build:
+      context: containerapp.todoapi
+      dockerfile: Dockerfile
+    ports:
+      - 7272:80
+    environment:
+      - MyDbContext=Server=containerapp-sqlserverdb;Database=TodoItem_DB;User Id=sa;Password=P@ssw0rd;TrustServerCertificate=true
+  containerapp-weatherapi:
+    container_name: containerapp-weatherapi
+    image: containerapp-weatherapi
+    build:
+      context: containerapp.weatherapi
+      dockerfile: Dockerfile
+    ports:
+      - 7373:80
+  containerapp-sqlserverdb:
+    container_name: containerapp-sqlserverdb
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    ports:
+      - "3333:1433"
+    environment:
+      SA_PASSWORD: "P@ssw0rd"
+      ACCEPT_EULA: "Y"
+    volumes:
+      - sqldata-volume:/var/opt/mssql
+volumes:
+  sqldata-volume:
