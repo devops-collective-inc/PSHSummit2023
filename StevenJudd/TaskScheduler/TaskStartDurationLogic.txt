@@ -1,0 +1,65 @@
+Get Trigger Type
+If the Trigger Type is One Time
+  AND Trigger Repetition Duration is set
+    Calculate if the StartBoundary + Repetition Duration < Current Date
+      If True, Task cannot run
+      If False,
+        Calculate next run start time
+        If Trigger Execution Time Limit
+          Calculate end time from start time
+        ElseIf Settings Execution Time Limit <> PT0S
+          Calculate end time from start time
+        Else
+          No end time set
+If the Trigger Type is Daily
+  If the Trigger Repetition Duration < 1 Day
+    Calculate time Task must stop
+    Calculate next run start time
+      If run time < stop time
+        Return run start time
+      If Repetition Interval
+        Add Interval to start time
+        If start time < stop time
+          Return run start time
+        LOOP until start time >= stop time
+    FOREACH start time
+      If Trigger Execution Time Limit
+        Calculate end time from start time
+      ElseIf Settings Execution Time Limit <> PT0S
+        Calculate end time from start time
+      Else
+        No end time set
+      LOOP FOREACH
+  ElseIf
+    Stop time = Trigger Start Boundary + 24H
+    Start time = Trigger Start Boundary
+    If Repetition Interval
+      Add Interval to start time
+      If start time < stop time
+        Return run start time
+      LOOP until start time >= stop time
+    FOREACH start time
+      If Trigger Execution Time Limit
+        Calculate end time from start time
+      ElseIf Settings Execution Time Limit <> PT0S
+        Calculate end time from start time
+      Else
+        No end time set
+      LOOP FOREACH
+If the Trigger Type is Weekly
+...
+
+If the Trigger Type is Monthly
+...
+
+If the Trigger Type is one of the following, no need to schedule map:
+  At log on
+  At startup
+  On idle
+  On an event
+  At task creation/modification
+  On connection to user session
+  On disconnect from user session
+  On workstation lock
+  On workstation unlock
+
